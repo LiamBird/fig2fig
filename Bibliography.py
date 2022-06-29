@@ -1,5 +1,6 @@
 ## Created 09.04.2022
 ## Updated with XRD data tab 18.06.22
+## Updated with LiSTAR affiliation checkbox 29.06.2022
 
 import ipywidgets as wg
 import numpy as np
@@ -12,16 +13,6 @@ from SelectFilesButton import SelectFilesButton
 
 class Bibliography(object):
     def __init__(self):
-    """
-    Temporary docstring: to be updated
-    To open GUI and enter data:
-    
-    import Bibliography as bib
-    bibliography = Bibliography()
-    bibliography.tab
-    
-    Any issues please contact llrb2@cam.ac.uk
-    """
         self._reload = None
         self._label_layout = wg.Layout(width="20%")
         self._entry_layout = wg.Layout(width="20%")
@@ -70,9 +61,12 @@ class Bibliography(object):
                                                                 "article_details.npy"),
                                                    allow_pickle=True).item()
                 for keys, values in reloaded_article_details.items():
-                    entry = [entries for names, entries in article_dict.items() if names.value==keys][0]
-                    entry.value = values                
-            
+                    if "LiSTAR" not in keys:
+                        entry = [entries for names, entries in article_dict.items() if names.value==keys][0]
+                        entry.value = values        
+                    else:
+                        listar_cbox.value = reloaded_article_details["LiSTAR affiliated"]
+                                
         article_dict = dict([(wg.Label(value=key, layout=self._label_layout),
                               wg.Text(value=value, layout=self._entry_layout)) for key, value in 
                              reloaded_article_details.items()])
@@ -80,14 +74,18 @@ class Bibliography(object):
         article_save_button = wg.Button(description="Save article details")
         article_save_label = wg.Label(value="Not yet saved")
         
+        listar_label = wg.Label(value="LiSTAR affiliated")
+        listar_cbox = wg.Checkbox(value=False)
+                
         def on_article_save_button_clicked(b):
             article_values = dict([(keys.value, values.value) for keys, values in article_dict.items()])
+            article_values.update([("LiSTAR affiliated", listar_cbox.value)])
             np.save(os.path.join(self.save_directory, "article_details.npy"), article_values, allow_pickle=True)
             article_save_label.value = "Data saved {}".format(datetime.now().strftime("%H:%M:%S"))
             
-            
         article_save_button.on_click(on_article_save_button_clicked)
         article_vbox = wg.VBox([wg.HBox([keys, values]) for keys, values in article_dict.items()]+
+                               [wg.HBox([listar_label, listar_cbox])]+
                                [wg.HBox([article_save_button, article_save_label])])
             
         
