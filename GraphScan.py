@@ -12,8 +12,7 @@ from SelectFilesButton import SelectFilesButton
 
 from datetime import datetime
 
-# Annotate class used with minor variation from: https://stackoverflow.com/a/12057517
-
+# Annotate class used with minor variation from: https://stackoverflow.com/a/12057517 
 class Annotate(object):
     def __init__(self, ax):
 #         self.ax = plt.gca()
@@ -384,18 +383,30 @@ class _Lines(object):
 def pixels_to_array(self, axis, pos):
     if axis == "x":
         pixels_per_division = self.axis_limits["image_width"]/(self.axis_limits["x_max"]-self.axis_limits["x_min"])
-        return int(pixels_per_division*(pos-self.axis_limits["x_min"]))
+        try:
+            return int(pixels_per_division*(pos-self.axis_limits["x_min"]))
+        except:
+            return np.nan
     if axis == "y":
         pixels_per_division = self.axis_limits["image_height"]/(self.axis_limits["y_max"]-self.axis_limits["y_min"])
-        return int(self.axis_limits["image_height"]-pixels_per_division*(pos-self.axis_limits["y_min"]))
+        try:
+            return int(self.axis_limits["image_height"]-pixels_per_division*(pos-self.axis_limits["y_min"]))
+        except:
+            return np.nan
     
 def array_to_pixels(self, axis, pos):
     if axis == "x":
         division_per_pixel = (self.axis_limits["x_max"]-self.axis_limits["x_min"])/self.axis_limits["image_width"]
-        return int(division_per_pixel*pos)
+        try:
+            return int(division_per_pixel*pos)
+        except:
+            return np.nan
     if axis == "y":
         division_per_pixel = (self.axis_limits["y_max"]-self.axis_limits["y_min"])/self.axis_limits["image_height"]
-        return int(self.axis_limits["y_max"]-division_per_pixel*pos)    
+        try:
+            return int(self.axis_limits["y_max"]-division_per_pixel*pos)    
+        except:
+            return np.nan
     
 class _Masks(object):
     def __init__(self, figsize):
@@ -535,9 +546,69 @@ def graph_scan(self, target_color, color_tolerance, margin=10):
             y_markers.append(np.nan)
     return y_markers
 
+### Monochrome scan added 13/07/2022
+def _sub_monochrome(self, cycle, n_plots, min_marker_size=5, margin=10):
+    cycle_step = self.axis_limits["image_width"]/(self.axis_limits["x_axis_extent"])
+    slices = []
+    
+    slice_min = int(cycle*cycle_step)
+    slice_max = int((cycle+1)*(cycle_step))
+    if slice_max > self.axis_limits["image_width"]-margin:
+        slice_max = self.axis_limits["image_width"]-margin
+    if slice_min < margin:
+        slice_min = margin
+
+    slice_img = self.masked_img[margin:-margin, slice_min:slice_max, :]
+    slice_sum = np.sum(np.sum(slice_img, axis=2), axis=1)
+
+    bkg_sum = slice_img.shape[1]*slice_img.shape[2]
+    non_bkg = margin+np.argwhere(slice_sum<bkg_sum).flatten()
+    try:
+        plot_id = dict([(n, {"start": None,
+                             "end": None}) for n in range(n_plots)])
+
+        plot_id[min(plot_id.keys())]["start"] = non_bkg[0]
+        plot_id[max(plot_id.keys())]["end"] = non_bkg[-1]
+
+        starts = []
+        ends = []
+
+        for n in range(1, non_bkg.shape[0]-1):
+            if non_bkg[n]-non_bkg[n-1] > min_marker_size:
+                starts.append(non_bkg[n])
+            elif non_bkg[n+1]-non_bkg[n] > min_marker_size:
+                ends.append(non_bkg[n])
+
+        for key, value in [*plot_id.items()][1:]:
+            value["start"] = starts[key-1]
+        for key, value in [*plot_id.items()][:-1]:
+            value["end"] = ends[key]
+            
+    except:
+        plot_id = dict([(n, {"start": np.nan,
+                             "end": np.nan}) for n in range(n_plots)])
+        
+    return plot_id
+
+def monochrome(self, n_plots, plot_id="all", min_marker_size=4, margin=10):
+    import warnings
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+    
+    y = dict([(keys, []) for keys in range(n_plots)])
+    
+    for cycle in range(int(self.axis_limits["x_max"]-self.axis_limits["x_min"])):
+        cycle_capacity = _sub_monochrome(self, cycle, n_plots, min_marker_size, margin)
+        for keys, values in cycle_capacity.items():
+            y[keys].append(array_to_pixels(self, "y", np.nanmean([*values.values()])))
+    if plot_id == "all":        
+        return y
+    else:
+        return y[plot_id]
+
 class _Scan(object):
     def __init__(self):
         self.B_get_lines = wg.Button(description="Get line details")
+        self.CB_monochrome = wg.Checkbox(description="Monochrome graph?", value=False)
         self.B_display_graph = wg.Button(description="Display graph")
         self.B_save_data = wg.Button(description="Save")
         self.L_save_confirm = wg.Label(value="No values saved this session")
@@ -578,16 +649,29 @@ class _Scan(object):
             line_properties = np.load(os.path.join(self.save_data_path, "line_properties.npy"),
                                              allow_pickle=True).item()
             self.lines = []
+            
             for nline, line in enumerate(line_properties.values()):
-                y_data = graph_scan(self, target_color=line["Hex color"], color_tolerance=0.3)
-                scanned, = self.ax.plot(np.arange(self.axis_limits["x_min"],
-                                                  self.axis_limits["x_max"])+0.5, y_data, "o")
-                self.lines.append(scanned)
-                
+                if self.CB_monochrome.value == False:
+                    y_data = graph_scan(self, target_color=line["Hex color"], color_tolerance=0.3)
+                    scanned, = self.ax.plot(np.arange(self.axis_limits["x_min"],
+                                                      self.axis_limits["x_max"])+0.5, y_data, "o")
+                    self.lines.append(scanned)
+                else: ## ADDED
+                    y_data = monochrome(self, n_plots=len(line_properties),
+                                        plot_id=nline, min_marker_size=4, margin=1)
+                    scanned, = self.ax.plot(np.arange(self.axis_limits["x_min"],
+                                                      self.axis_limits["x_max"])+0.5, y_data, "o")
+                    self.lines.append(scanned)
+
             def update(tolerance, margin):
                 for nline, line in enumerate(line_properties.values()):
-                    y_data = graph_scan(self, target_color=line["Hex color"], color_tolerance=tolerance, margin=int(margin))
-                    self.lines[nline].set_ydata(y_data)
+                    if self.CB_monochrome.value == False:
+                        y_data = graph_scan(self, target_color=line["Hex color"], color_tolerance=tolerance, margin=int(margin))
+                        self.lines[nline].set_ydata(y_data)
+                    else: ## ADDED
+                        y_data = monochrome(self, n_plots=len(line_properties), plot_id=nline, min_marker_size=4, margin=int(margin))
+                        self.lines[nline].set_ydata(y_data)
+                    
             wg.interact(update, tolerance=self.tolerance_slider, 
                         margin=self.E_set_margin)
         self.B_display_graph.on_click(scan_lines)
@@ -637,7 +721,8 @@ class _Scan(object):
             self.L_save_confirm.value = "Data saved {}".format(datetime.now().strftime("%H:%M:%S"))
         self.B_save_data.on_click(on_Scan_confirm_traced_lines) 
         
-        self.vbox = wg.VBox([self.B_get_lines, self.B_display_graph, self.VB_trace_lines_box, self.O_graph_display,
+        self.vbox = wg.VBox([self.B_get_lines, self.B_display_graph, self.VB_trace_lines_box, 
+                             self.CB_monochrome, self.O_graph_display,
                              wg.HBox([self.B_save_data, self.L_save_confirm])
                             ])
         
