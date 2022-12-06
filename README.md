@@ -32,7 +32,7 @@ graph.tab
 
 Entered data can be saved in each tab, and can be reloaded through the same interfaces (Bibliography and GraphScan). However, some features (including reloading/ clearing mask data) don't always work and need repair - watch this space!
 
-For any issues, contact Liam (llrb2@cam.ac.uk)
+For any issues, contact Liam (liam.bird@ucl.ac.uk)
 
 ## Bibliography
 
