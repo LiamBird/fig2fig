@@ -34,23 +34,7 @@ Entered data can be saved in each tab, and can be reloaded through the same inte
 
 For any issues, contact Liam (liam.bird@eng.ox.ac.uk)
 
-## Bibliography
-
-### Save and reload
-
-Using:
-```
-bib = Bibliography()
-bib.tab
-```
-
-will open a Jupyter tab widget. 
-To begin a new entry, click the button next to 'create new data': this will open a Tkinter-style file dialogue window. Make a new empty directory to contain your saved data files, or select a pre-existing directory. If any Bibliography files are saved to that directory, they will be overwritten on saving. 
-Click 'Confirm' to see the text that says 'Please select a directory' change to show the path to your new folder. 
-
-### Article details
-Type the identifying details of the paper (last name of the first author, the year of publication, and the optional label). 
-The optional label is simply to make it easier to differentiate similar records by the user (e.g. multiple papers labelled 'Li2020'). It is not used in analysis. 
+For detailed instructions, see the [wiki](https://github.com/LiamBird/fig2fig/wiki) (https://github.com/LiamBird/fig2fig/wiki)
 
 
 
