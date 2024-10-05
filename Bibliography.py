@@ -1,6 +1,7 @@
 ## Created 09.04.2022
 ## Updated with XRD data tab 18.06.22
 ## Updated with LiSTAR affiliation checkbox 29.06.2022
+## Updated with voltage ranges in electrolyte tab 30.11.2022 (NB does not reload correctly)
 
 import ipywidgets as wg
 import numpy as np
@@ -90,7 +91,8 @@ class Bibliography(object):
             
         
 ### HOST LABEL
-        common_host_labels = ["Carbon type", "Carbon source", "Surface area (cm2/g)", "Pore volume", "Host conductivity", "Host conductivity units", "Sulfur loading (wt%)", "Sulfur loading (mg/ cm2)", "Sulfur loading method", "Typical pore widths", "Conductive additive", "Conductive additive content (wt%)", "Binder", "Binder content (wt%)", "Electrode solvent"]
+        common_host_labels = ["Carbon type", "Carbon source", "Surface area (cm2/g)", "Pore volume", "Host conductivity", "Host conductivity units", "Sulfur loading (wt%)", "Sulfur loading (mg/ cm2)", "Sulfur loading method", "Typical pore widths", "Conductive additive", "Conductive additive content (wt%)", "Binder", "Binder content (wt%)", "Electrode solvent", "Electrode thickness"]
+    ## Added electrode thickness 30/11/2022
         self.reloaded_host_details = {1: dict([(key, '') for key in common_host_labels])}
         
 #         self.reloaded_host_details = reloaded_host_details
@@ -296,7 +298,12 @@ class Bibliography(object):
         
         cell_type_label = wg.Label("Cell type", layout=wg.Layout(width="20%"))
         cell_type_entry = wg.Text(value="CR2032")
-                            
+        
+        ## Added 30/11/2022
+        minimum_voltage_label = wg.Label("Minimum voltage", layout=wg.Layout(width="20%"))
+        minimum_voltage_value = wg.FloatText(value=None, layout=wg.Layout(width="10%"))
+        maximum_voltage_label = wg.Label("Maximum voltage", layout=wg.Layout(width="20%"))
+        maximum_voltage_value = wg.FloatText(value=None, layout=wg.Layout(width="10%"))                            
         
         electrolyte_save = wg.Button(description="Save")
         def on_electrolyte_save_clicked(b):
@@ -306,7 +313,6 @@ class Bibliography(object):
             LiNO3_units = [self.electrolyte_vbox.children[2].children[i].description for i in [2, 3] if self.electrolyte_vbox.children[2].children[i].value==True][0]
             electrolyte_dict.update([("LiNO3_units", LiNO3_units)])
             electrolyte_dict.update([("salt_units", salt_units)])
-#             electrolyte_dict
             
             np.save(os.path.join(self.save_directory, 
                                  "electrolyte_details.npy"),
@@ -359,6 +365,8 @@ class Bibliography(object):
             wg.HBox([ES_ratio_label, ES_ratio_entry]),
             wg.HBox([separator_type_label, separator_entry]),
             wg.HBox([cell_type_label, cell_type_entry]),
+            wg.HBox([minimum_voltage_label, minimum_voltage_value]), ## added
+            wg.HBox([maximum_voltage_label, maximum_voltage_value]), ## added
             wg.HBox([electrolyte_save, electrolyte_save_confirm])            
         ])
         self.electrolyte_vbox = electrolyte_vbox
