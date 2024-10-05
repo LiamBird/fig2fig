@@ -453,6 +453,6 @@ class Bibliography(object):
                            host_vbox,
                            electrolyte_vbox,
                            XRD_vbox])
-        tab_names = ["Save and reload", "Article details", "Host", "Electrolyte", "Sulfur XRD"]
+        tab_names = ["Save and reload", "Article details", "Host", "Electrochemistry", "Sulfur XRD"] ## renamed electrochemistry tab from electolyte 05.10.2024
         for n, names in enumerate(tab_names):
             self.tab.set_title(n, names)
