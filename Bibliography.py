@@ -1,8 +1,3 @@
-## Created 09.04.2022
-## Updated with XRD data tab 18.06.22
-## Updated with LiSTAR affiliation checkbox 29.06.2022
-## Updated with voltage ranges in electrolyte tab 30.11.2022 (NB does not reload correctly)
-
 import ipywidgets as wg
 import numpy as np
 import re
@@ -14,6 +9,13 @@ from SelectFilesButton import SelectFilesButton
 
 class Bibliography(object):
     def __init__(self):
+        self._version = "05.10.2024"#
+        self._change_log = ["09.04.2022: Created version",
+                            "18.06.2022: Added XRD data tab",
+                            "29.06.2022: Added LiSTAR affiliation checkbox",
+                            "30.11.2022: Updated with voltage ranges in electrolyte tab  (NB does not reload correctly)",
+                            "05.10.2024: Repaired voltage ranges not reloading"]
+        
         self._reload = None
         self._label_layout = wg.Layout(width="20%")
         self._entry_layout = wg.Layout(width="20%")
@@ -345,7 +347,11 @@ class Bibliography(object):
                 salt_mol.value = True
             else:
                 salt_wtpc.value = True
-                salt_mol.value = False    
+                salt_mol.value = False   
+                
+            ## Fixed 05.10.2024
+            minimum_voltage_value.value = reloaded_electrolyte_values["Minimum voltage"]
+            maximum_voltage_value.value = reloaded_electrolyte_values["Maximum voltage"]
                 
             if "Separator type" in reloaded_electrolyte_values.keys(): ## Later entries
                 separator_entry.value = reloaded_electrolyte_values["Separator type"]
