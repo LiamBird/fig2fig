@@ -40,7 +40,7 @@ class Annotate(object):
         self.rect.set_xy((self.x0, self.y0))
         self.ax.figure.canvas.draw()
         
-########## Load reload ##########
+#################### Load reload ####################
 class _LoadReload(object):
     def __init__(self):    
         self._reload = False
@@ -88,7 +88,7 @@ class _LoadReload(object):
                                                                             self.L_confirm_image])])]
         B_confirm_save_location.on_click(on_B_confirm_save_location)
 
-########## Setting Axes ##########
+#################### Setting Axes ####################
 class _Axis(object):
     def __init__(self, figsize):
         self.O_image_display = wg.Output()
@@ -200,20 +200,34 @@ class _Axis(object):
                                    self.axis_limits["y_max"]))
         self.ax.set_aspect(self.axis_limits["x_axis_extent"]/
                            self.axis_limits["y_axis_extent"])
+#         print("Axis show cropped image run")
         plt.tight_layout()
         
     def _reload_function(self):
         if "axis_limits.npy" in os.listdir(self.save_data_path):
-            self.axis_limits = np.load(os.path.join(self.save_data_path, "axis_limits.npy"), allow_pickle=True).item()
-            self.E_xaxis_min.value = self.axis_limits["x_min"]
-            self.E_xaxis_max.value = self.axis_limits["x_max"]
-            self.E_yaxis_min.value = self.axis_limits["y_min"]
-            self.E_yaxis_max.value = self.axis_limits["y_max"]
-        if "cropped_image.npy" in os.listdir(self.save_data_path):
-            self.cropped_image = np.load(os.path.join(self.save_data_path, "cropped_image.npy"), allow_pickle=True)
-            self._show_cropped_image()
+            try:
+                self.axis_limits = np.load(os.path.join(self.save_data_path, "axis_limits.npy"), allow_pickle=True).item()
+                self.E_xaxis_min.value = self.axis_limits["x_min"]
+                self.E_xaxis_max.value = self.axis_limits["x_max"]
+                self.E_yaxis_min.value = self.axis_limits["y_min"]
+                self.E_yaxis_max.value = self.axis_limits["y_max"]
+                if "cropped_image.npy" in os.listdir(self.save_data_path):
+                    self.cropped_image = np.load(os.path.join(self.save_data_path, "cropped_image.npy"), allow_pickle=True)
+                    self._show_cropped_image()
+                
+            except:
+                print("Axis limits in incorrect format - please check save path")
             
-########## Lines CRates
+#             print(self.save_data_path)
+#             self.axis_limits = np.load(os.path.join(self.save_data_path, "axis_limits.npy"), allow_pickle=True).item()
+#             print("Axis set up")
+#             print(self.save_data_path)
+#             print(self.axis_limits.keys())
+            
+            
+#         print("Axis reload function run")
+            
+#################### Lines CRates ####################
 class CRate_entry(object):
     def __init__(self, crate_data_reload=None):
         if crate_data_reload == None:
@@ -350,18 +364,36 @@ class _Lines(object):
                              self.line_entry_accordion,
                              wg.HBox([self.B_save_lines, self.L_save_lines_confirm])])
         
-    def _reload_function(self):
-        if "axis_limits.npy" in os.listdir(self.save_data_path):
-            self.axis_limits = np.load(os.path.join(self.save_data_path, "axis_limits.npy"), allow_pickle=True).item()
-        if "cropped_image.npy" in os.listdir(self.save_data_path):
-            self.cropped_image = np.load(os.path.join(self.save_data_path, "cropped_image.npy"), allow_pickle=True)
-            self.ax.imshow(self.cropped_image,
+    ## test repair
+    def _show_cropped_image(self):
+        self.ax.imshow(self.cropped_image,
                            extent=(self.axis_limits["x_min"],
                                    self.axis_limits["x_max"],
                                    self.axis_limits["y_min"],
                                    self.axis_limits["y_max"]))
-            self.ax.set_aspect(self.axis_limits["x_axis_extent"]/
-                           self.axis_limits["y_axis_extent"])
+        self.ax.set_aspect(self.axis_limits["x_axis_extent"]/
+                            self.axis_limits["y_axis_extent"])
+        plt.tight_layout()
+        
+    ## To be repaired 06/10/2024 - does not reload line properties correctly for rate change
+    def _reload_function(self):
+        if "axis_limits.npy" in os.listdir(self.save_data_path):
+            try:
+                self.axis_limits = np.load(os.path.join(self.save_data_path, "axis_limits.npy"), allow_pickle=True).item()
+            except:
+                print("Axis limits in incorrect format - please check save path")
+        if "cropped_image.npy" in os.listdir(self.save_data_path):            
+            self.cropped_image = np.load(os.path.join(self.save_data_path, "cropped_image.npy"), allow_pickle=True)
+            self._show_cropped_image()
+#             self.ax.imshow(self.cropped_image,
+#                            extent=(self.axis_limits["x_min"],
+#                                    self.axis_limits["x_max"],
+#                                    self.axis_limits["y_min"],
+#                                    self.axis_limits["y_max"]))
+#             plt.tight_layout()
+#             self.ax.set_aspect(self.axis_limits["x_axis_extent"]/
+#                            self.axis_limits["y_axis_extent"])
+#             print("Lines._show_cropped_image runs OK" )
             
         if "line_properties.npy" in os.listdir(self.save_data_path):
             reloaded_line_properties = np.load(
@@ -753,6 +785,9 @@ class _Scan(object):
 ########## GUI ###########
 class GraphScan(object):
     def __init__(self, figsize=(4, 4)):
+        self._version = "06.10.2024"
+        self._change_log = ["06.10.2024: Removed extra 'reload' steps to enable Output widgets to show graphs rather than automatically re-displaying"]
+        
         plt.close("all")
         self.LoadReload = _LoadReload()
         self.Axis = _Axis(figsize=figsize)
@@ -779,9 +814,9 @@ class GraphScan(object):
             
             if self.LoadReload._reload == True:
                 self.Axis._reload_function()
-                self.Lines._reload_function()
-                self.Mask._reload_function()
-                self.Scan._reload_function()
+#                 self.Lines._reload_function()
+#                 self.Mask._reload_function()
+#                 self.Scan._reload_function()
             
             self.LoadReload.L_confirm_image.value = "Selected image confirmed"
             
