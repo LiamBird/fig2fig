@@ -1,6 +1,8 @@
 # fig2fig
 Read figures from figures: interpolate numerical data from figures presented in articles to find quantitative comparisons
 
+__For version 1 implementation, see:__ https://pubs.acs.org/doi/10.1021/acsmaterialslett.4c01646
+
 ## Required packages
 - numpy
 - matplotlib.pyplot
