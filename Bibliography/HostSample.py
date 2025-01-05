@@ -1,17 +1,24 @@
 class _HostSample(object):
     def __init__(host_self, test=False):
         '''
-        Subsection of Host tab for 
+        Subsection of Host tab for individual entries
         '''
         import ipywidgets as wg
         import numpy as np
         import os
 
+        ## 05/01/2024 Added checkboxes and details boxes for sulfur loading methods
         
         host_self.sample_dict = {"Host label": wg.Text(description="Host label", value=None),
                                     "Carbon type": wg.Text(description="Carbon type", value=None),
                                     "Carbon source": wg.Text(description="Carbon source", value=None),
                                     "Sulfur loading method": wg.Text(description="Sulfur loading method", value=None),
+                                     "Sulfur method thermal checkbox": wg.Checkbox(description="Thermal"), ## New sulfur loading methods start
+                                    "Sulfur method thermal details": wg.Text(value="155 degC 12 hours"),
+                                    "Sulfur method chemical checkbox": wg.Checkbox(description="Chemical "),
+                                    "Sulfur method chemical details": wg.Text(value="Na2S2O3"),
+                                    "Sulfur method solution checkbox": wg.Checkbox(description="Solution"),
+                                    "Sulfur method solution details": wg.Text(value="CS2"),  ## New sulfur loading methods end
                                     "Sulfur loading (wt%)": wg.Text(description="Sulfur loading (wt%)", value=None),
                                     "Sulfur loading (mg/ cm2)": wg.Text(description="Areal loading (mg/cm2)", value=None),              
                                     "Surface area (cm2/g)": wg.Text(description="Surface area", value=None),
@@ -47,7 +54,14 @@ class _HostSample(object):
         host_self.vbox = wg.VBox([host_self.sample_dict["Host label"],
                                     host_self.sample_dict["Carbon type"],
                                     host_self.sample_dict["Carbon source"],
-                                    host_self.sample_dict["Sulfur loading method"],
+                                    wg.Label(value="Sulfur loading methods"), ## New sulfur loading methods start
+                                    wg.HBox([host_self.sample_dict["Sulfur method thermal checkbox"],
+                                             host_self.sample_dict["Sulfur method thermal details"]]),
+                                   wg.HBox([host_self.sample_dict["Sulfur method chemical checkbox"],
+                                             host_self.sample_dict["Sulfur method chemical details"]]),
+                                   wg.HBox([host_self.sample_dict["Sulfur method solution checkbox"],
+                                             host_self.sample_dict["Sulfur method solution details"]]),                                 
+                                            host_self.sample_dict["Sulfur loading method"], ## New sulfur loading methods end
                                     wg.HBox([host_self.sample_dict["Sulfur loading (wt%)"],
                                                 host_self.sample_dict["Sulfur loading (mg/ cm2)"]]),
                                     wg.HBox([host_self.sample_dict["Surface area (cm2/g)"],
