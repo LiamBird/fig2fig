@@ -14,13 +14,19 @@ class _CommonHost(object):
         import os
         
         ## 02/12/2024 - added sulfur doping and C/X ratio as radiobuttons
-        
+        ## 05/01/2024 - added sulfur loading methods as checkbox + details for common values
         
         ## Common parameters dictionary
         ## Note that some of the displayed labels differ from the dictionary keys for ease of display
         commonhost_self.common_dict = {"Carbon type": wg.Text(description="Carbon type", value=None),
                                         "Carbon source": wg.Text(description="Carbon source", value=None),
                                         "Sulfur loading method": wg.Text(description="Sulfur loading method", value=None),
+                                       "Sulfur method thermal checkbox": wg.Checkbox(description="Thermal"),   ### New sulfur loading methods start
+                                        "Sulfur method thermal details": wg.Text(value="155 degC 12 hours"),
+                                        "Sulfur method chemical checkbox": wg.Checkbox(description="Chemical "),
+                                        "Sulfur method chemical details": wg.Text(value="Na2S2O3"),
+                                        "Sulfur method solution checkbox": wg.Checkbox(description="Solution"),
+                                        "Sulfur method solution details": wg.Text(value="CS2"),             ## New sulfur loading methods end                                       
                                         "Sulfur loading (wt%)": wg.Text(description="Sulfur loading (wt%)", value=None),
                                         "Sulfur loading (mg/ cm2)": wg.Text(description="Areal loading (mg/cm2)", value=None),
                                         "Surface area (cm2/g)": wg.Text(description="Surface area", value=None),
@@ -55,7 +61,7 @@ class _CommonHost(object):
         ## Descriptors that are common to all entered hosts are marked as True
         ## Information is used by 'Update common' button defined in HostTab class to transfer from common fields to sample accordion
         commonhost_self.common_checkbox = dict([(keys, wg.Checkbox(description="", indent=False)) 
-                                                for keys, values in commonhost_self.common_dict.items()])
+                                                for keys, values in commonhost_self.common_dict.items()]) ## New sulfur methods checkboxes taken care of by keys, values
         
         
         
@@ -63,7 +69,21 @@ class _CommonHost(object):
         ## Manually defined so that related fields can be placed in HBoxes next to each other where useful to do so. 
         commonhost_self.common_vbox = wg.VBox([wg.HBox([commonhost_self.common_dict["Carbon type"], commonhost_self.common_checkbox["Carbon type"]]),
                                                         wg.HBox([commonhost_self.common_dict["Carbon source"], commonhost_self.common_checkbox["Carbon source"]]),
-                                                        wg.HBox([commonhost_self.common_dict["Sulfur loading method"], commonhost_self.common_checkbox["Sulfur loading method"]]),
+                                                        wg.Label(value="Sulfur loading methods"),  ## New sulfur loading methods start
+                                                        wg.HBox([commonhost_self.common_dict["Sulfur method thermal checkbox"],
+                                                                 commonhost_self.common_checkbox["Sulfur method thermal checkbox"],
+                                                                 commonhost_self.common_dict["Sulfur method thermal details"],
+                                                                 commonhost_self.common_checkbox["Sulfur method thermal details"]]),
+                                                       wg.HBox([commonhost_self.common_dict["Sulfur method chemical checkbox"],
+                                                                 commonhost_self.common_checkbox["Sulfur method chemical checkbox"],
+                                                                 commonhost_self.common_dict["Sulfur method chemical details"],
+                                                                 commonhost_self.common_checkbox["Sulfur method chemical details"]]),
+                                                       wg.HBox([commonhost_self.common_dict["Sulfur method solution checkbox"],
+                                                                 commonhost_self.common_checkbox["Sulfur method solution checkbox"],
+                                                                 commonhost_self.common_dict["Sulfur method solution details"],
+                                                                 commonhost_self.common_checkbox["Sulfur method solution details"]]),
+                                                        wg.HBox([commonhost_self.common_dict["Sulfur loading method"], 
+                                                                 commonhost_self.common_checkbox["Sulfur loading method"]]), ## New sulfur loading methods end
                                                         wg.HBox([commonhost_self.common_dict["Sulfur loading (wt%)"], commonhost_self.common_checkbox["Sulfur loading (wt%)"],
                                                                 commonhost_self.common_dict["Sulfur loading (mg/ cm2)"], commonhost_self.common_checkbox["Sulfur loading (mg/ cm2)"]]),
                                                         wg.HBox([commonhost_self.common_dict["Surface area (cm2/g)"], commonhost_self.common_checkbox["Surface area (cm2/g)"],
